@@ -1,57 +1,40 @@
 import { Scene } from "phaser";
 
+// import class entitities
+import { Paddle } from "../entities/Paddle";
+import { Ball } from "../entities/Ball";
+import { Brick } from "../entities/Brick";
+import { WallBrick } from "../entities/WallBrick";
+
 export class Game extends Scene {
   constructor() {
     super("Game");
   }
 
   create() {
-    // crear pala como rectangulo
-    this.paddle = this.add.rectangle(400, 500, 100, 20, 0x6666ff);
+    // instanciar una nueva paleta.
+    // crea un nuevo objeto
+    // el this, aca, hace referencia a la escena
+    this.ball = new Ball(this, 400, 300, 10, 0xffffff, 1);
+    this.paddle = new Paddle(this, 400, 550, 300, 20, 0xffffff, 1);
+    this.wall = new WallBrick(this);
 
-    // crear bola como circulo
-    this.ball = this.add.circle(400, 300, 10, 0xff6666);
+    // colisiones
+    this.physics.add.collider(this.paddle, this.ball);
 
-    //crear obstaculo
-    this.obstacle = this.add.rectangle(400, 200, 100, 100, 0x66ff66);
-
-    //agregarlos a las fisicas
-    this.physics.add.existing(this.paddle);
-    this.physics.add.existing(this.ball);
-    this.physics.add.existing(this.obstacle);
-
-    //hacer la paleta inamovible
-    this.paddle.body.setImmovable(true);
-
-    //agregar configuraciones de fisicas a la paleta
-    this.paddle.body.setCollideWorldBounds(true);
-
-    //agregar configuracion de fisicas a la pelota
-    this.ball.body.setCollideWorldBounds(true);
-    this.ball.body.setBounce(1, 1);
-    this.ball.body.setVelocity(200, 200);
-
-    //agregar configuracion de fisicas al obstaculo
-    this.obstacle.body.setImmovable(true);
-
-    //agregar cursor
-    this.cursor = this.input.keyboard.createCursorKeys();
-
-    //colision de la pelota con la paleta
-    this.physics.add.collider(this.paddle, this.ball, null, null, this);
-
-    //colision de la pelota con el obstaculo
-    this.ball.body.onWorldBounds = true;
     this.physics.add.collider(
-      this.obstacle,
       this.ball,
-      this.handleCollision,
+      this.wall,
+      (ball, brick) => {
+        brick.hit();
+      },
       null,
       this
     );
 
     //colision de la pelota con el limite inferior
     this.physics.world.on("worldbounds", (body, up, down, left, right) => {
+      console.log("worldbounds");
       if (down) {
         console.log("hit bottom");
         this.scene.start("GameOver");
@@ -60,15 +43,6 @@ export class Game extends Scene {
   }
 
   update() {
-    if (this.cursor.right.isDown) {
-      this.paddle.x += 10;
-    } else if (this.cursor.left.isDown) {
-      this.paddle.x -= 10;
-    }
+    this.paddle.update();
   }
-
-  handleCollision = (obstacle, ball) => {
-    console.log("collision");
-    obstacle.destroy();
-  };
 }

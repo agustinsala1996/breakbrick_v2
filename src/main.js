@@ -20,6 +20,7 @@ const config = {
     default: "arcade",
     arcade: {
       gravity: { y: 0 },
+      debug: false,
     },
   },
   scene: [Boot, Preloader, MainMenu, Game, GameOver],
